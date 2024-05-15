@@ -128,7 +128,7 @@ function Register() {
             width: "100%",
             maxWidth: "100%",
             height: "100vh",
-            objectFit: "cover",
+            objectFit: "contain",
           }}
         />
       </Grid>

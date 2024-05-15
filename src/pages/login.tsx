@@ -1,10 +1,8 @@
 import {
-  Alert,
   Box,
   Button,
   CardMedia,
   CssBaseline,
-  Fade,
   Grid,
   Link,
   Paper,
@@ -17,7 +15,6 @@ import React, { useState } from "react";
 import { login } from "../services/auth/auth.service";
 import { useNavigate } from "react-router-dom";
 function Login() {
-  const [alertMessage, setAlertMessage] = useState("");
   const [error, setError] = useState(false);
   const navigate = useNavigate();
 
@@ -27,12 +24,17 @@ function Login() {
     const email = data.get("email") as string;
     const password = data.get("password") as string;
 
-    const response = login(email, password);
-    if (await response) {
-      navigate("/home");
-    } else {
-      setAlertMessage("Invalid username or password.");
-      setError(true);
+    try {
+      const response = await login(email, password);
+      if (response) {
+        const { id: userId, name } = response;
+        navigate("/home", { state: { userId, name } });
+      } else {
+        setError(true);
+        console.error("Login failed");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
     }
   };
   return (
@@ -117,7 +119,7 @@ function Login() {
             width: "100%",
             maxWidth: "100%",
             height: "100vh",
-            objectFit: "cover",
+            objectFit: "fill",
           }}
         />
       </Grid>
