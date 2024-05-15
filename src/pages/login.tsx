@@ -12,33 +12,27 @@ import {
   Typography,
 } from "@mui/material";
 
-import Image from "../assets/register.png";
-import { register } from "../services/auth/auth.service";
-import React from "react";
-function Register() {
-  const [alertOpen, setAlertOpen] = React.useState(false);
-  const [alertMessage, setAlertMessage] = React.useState("");
+import Image from "../assets/login.png";
+import React, { useState } from "react";
+import { login } from "../services/auth/auth.service";
+import { useNavigate } from "react-router-dom";
+function Login() {
+  const [alertMessage, setAlertMessage] = useState("");
+  const [error, setError] = useState(false);
+  const navigate = useNavigate();
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const email = data.get("email") as string;
-    const username = data.get("username") as string;
     const password = data.get("password") as string;
-    try {
-      const response = await register(username, email, password);
 
-      if (response === false) {
-        setAlertMessage("Account Already Exist");
-        setAlertOpen(true);
-      } else {
-        setAlertMessage("Registration Successful");
-        setAlertOpen(true);
-      }
-      console.log(response);
-    } catch (error) {
-      console.error("Error during registration:", error);
-      setAlertMessage("An error occurred. Please try again.");
-      setAlertOpen(true);
+    const response = login(email, password);
+    if (await response) {
+      navigate("/home");
+    } else {
+      setAlertMessage("Invalid username or password.");
+      setError(true);
     }
   };
   return (
@@ -55,22 +49,17 @@ function Register() {
           }}
           p={5}
         >
-          <Typography variant="h3">Create your account</Typography>
+          <Typography variant="h3">Welcome Back!</Typography>
           <Typography variant="body1" mt={3}>
             Monitor your task by having a todolist in your daily activity.
           </Typography>
+
           <Box component="form" onSubmit={handleSubmit} mt={3}>
-            <TextField
-              label="Username"
-              name="username"
-              id="username"
-              autoFocus
-              fullWidth
-              margin="normal"
-              required
-              InputLabelProps={{ required: false }}
-              InputProps={{ sx: { borderRadius: 6 } }}
-            />
+            {error && (
+              <Typography variant="body1" color={"red"} textAlign={"center"}>
+                Invalid Email or Password.
+              </Typography>
+            )}
             <TextField
               label="Email"
               name="email"
@@ -79,9 +68,11 @@ function Register() {
               fullWidth
               margin="normal"
               required
+              error={error}
               InputLabelProps={{ required: false }}
               InputProps={{ sx: { borderRadius: 6 } }}
             />
+
             <TextField
               label="Password"
               name="password"
@@ -90,6 +81,7 @@ function Register() {
               margin="normal"
               InputProps={{ sx: { borderRadius: 6 } }}
               autoFocus
+              error={error}
               InputLabelProps={{ required: false }}
               required
               fullWidth
@@ -102,12 +94,9 @@ function Register() {
             >
               Login
             </Button>
-            <Typography>
-              Already have an account? {""}
-              <Link href="/" sx={{ mt: 2 }}>
-                Log in
-              </Link>
-            </Typography>
+            <Link href="/register" sx={{ mt: 2 }}>
+              Don't have an account?
+            </Link>
           </Box>
         </Box>
       </Grid>
@@ -132,22 +121,7 @@ function Register() {
           }}
         />
       </Grid>
-      <Fade in={alertOpen}>
-        <Alert
-          severity="error"
-          variant="filled"
-          sx={{
-            position: "fixed",
-            top: "5%",
-            right: "5%",
-            zIndex: 9999,
-          }}
-          onClose={() => setAlertOpen(false)}
-        >
-          {alertMessage}
-        </Alert>
-      </Fade>
     </Grid>
   );
 }
-export default Register;
+export default Login;
