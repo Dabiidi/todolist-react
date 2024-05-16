@@ -113,8 +113,7 @@ function Home() {
     <Box
       sx={{
         display: "flex",
-        height: "100vh",
-        width: "100vw",
+        minHeight: "100vh",
         backgroundColor: "#fbf3df",
         justifyContent: "center",
         alignItems: "center",
@@ -132,7 +131,6 @@ function Home() {
           width: "100%",
           maxWidth: "1000px",
           backgroundColor: "#ffffff",
-          height: "70%",
         }}
       >
         <Box
@@ -144,13 +142,7 @@ function Home() {
             padding: 2,
           }}
         >
-          <Typography
-            variant="h3"
-            sx={{
-              backgroundColor: "#f2f2f2",
-              padding: 2,
-            }}
-          >
+          <Typography variant="h5" sx={{ padding: 2 }}>
             Welcome Back, {name}.
           </Typography>
           <Button variant="text" sx={{ minWidth: 0 }}>
@@ -158,13 +150,13 @@ function Home() {
               onClick={() => {
                 navigate("/");
               }}
-              sx={{ fontSize: 32 , color:"#000000"}}
+              sx={{ fontSize: 32, color: "#000000" }}
             />
           </Button>
         </Box>
 
         <Grid container spacing={2} sx={{ padding: 2 }}>
-          <Grid item xs={3}>
+          <Grid item xs={12} sm={3}>
             <Box
               sx={{
                 backgroundColor: "#f2f2f2",
@@ -197,7 +189,7 @@ function Home() {
               </List>
             </Box>
           </Grid>
-          <Grid item xs={9}>
+          <Grid item xs={12} sm={9}>
             <Box
               sx={{
                 display: "flex",
@@ -206,7 +198,7 @@ function Home() {
                 padding: 2,
                 borderRadius: 2,
                 boxShadow: 1,
-                height: "70%",
+                height: "60%",
                 minHeight: 350,
               }}
             >
@@ -216,7 +208,6 @@ function Home() {
                 component="nav"
                 sx={{
                   overflowY: "auto",
-
                   flexGrow: 1,
                   scrollbarWidth: "thin",
                   "&::-webkit-scrollbar": {
@@ -305,5 +296,4 @@ function Home() {
     </Box>
   );
 }
-
 export default Home;
