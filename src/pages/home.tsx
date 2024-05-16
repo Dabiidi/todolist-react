@@ -155,14 +155,13 @@ function Home() {
           </Button>
         </Box>
 
-        <Grid container spacing={2} sx={{ padding: 2 }}>
+        <Grid container spacing={2} sx={{ padding: 2}}>
           <Grid item xs={12} sm={3}>
             <Box
               sx={{
                 backgroundColor: "#f2f2f2",
                 padding: 2,
                 borderRadius: 2,
-                maxHeight: "80vh",
               }}
             >
               <Typography variant="h6">List</Typography>
@@ -198,8 +197,7 @@ function Home() {
                 padding: 2,
                 borderRadius: 2,
                 boxShadow: 1,
-                height: "60%",
-                minHeight: 350,
+                height: "400px",
               }}
             >
               <Typography variant="h6">List of Tasks</Typography>
