@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -18,15 +19,15 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import StarIcon from "@mui/icons-material/Star";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   addTask,
   deleteTask,
   fetchTasks,
+  updateTaskStarStatus,
 } from "../services/auth/todolist.service";
-import { useLocation } from "react-router-dom";
-import StarIcon from "@mui/icons-material/Star";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { formatDate } from "../utils/dateUtils";
 
 function Home() {
@@ -37,12 +38,19 @@ function Home() {
   const [task, setTask] = useState("");
   const [date, setDate] = useState<Date | null>(null);
   const [addDate, setAddDate] = useState(false);
+  const [starredTasks, setStarredTasks] = useState<string[]>([]);
   const [tasks, setTasks] = useState<{ task: string; task_id: string }[]>([]);
+  const [selectedTab, setSelectedTab] = useState("All");
 
-  const handleOpenModal = () => {
-    setOpenTask(true);
-  };
+  useEffect(() => {
+    if (userId) {
+      fetchTasks(userId)
+        .then((tasks) => setTasks(tasks))
+        .catch((error) => console.error("Error fetching tasks:", error));
+    }
+  }, [userId]);
 
+  const handleOpenModal = () => setOpenTask(true);
   const handleCloseModal = () => {
     setOpenTask(false);
     setAddDate(false);
@@ -61,15 +69,13 @@ function Home() {
       fetchTasks(userId)
         .then((tasks) => setTasks(tasks))
         .catch((error) => console.error("Error fetching tasks:", error));
+      handleCloseModal();
     } else {
       console.error("Failed to add task");
     }
-    handleCloseModal();
   };
 
-  console.log(tasks)
   const handleDeleteTask = async (taskId: string) => {
-    console.log(taskId)
     const success = await deleteTask(userId, taskId);
     if (success) {
       console.log("Task deleted successfully");
@@ -81,13 +87,26 @@ function Home() {
     }
   };
 
-  useEffect(() => {
-    if (userId) {
-      fetchTasks(userId)
-        .then((tasks) => setTasks(tasks))
-        .catch((error) => console.error("Error fetching tasks:", error));
+  const handleToggleStar = async (taskId: string) => {
+    const isStarred = starredTasks.includes(taskId);
+    const success = await updateTaskStarStatus(userId, taskId, !isStarred);
+    if (success) {
+      setStarredTasks(
+        isStarred
+          ? starredTasks.filter((id) => id !== taskId)
+          : [...starredTasks, taskId]
+      );
     }
-  }, [userId]);
+  };
+
+  const filteredTasks = tasks.filter((task) => {
+    if (selectedTab === "Starred") {
+      return starredTasks.includes(task.task_id);
+    } else if (selectedTab === "Unstarred") {
+      return !starredTasks.includes(task.task_id);
+    }
+    return true;
+  });
 
   return (
     <Box
@@ -99,6 +118,7 @@ function Home() {
         justifyContent: "center",
         alignItems: "center",
         padding: 2,
+        overflow: "hidden",
       }}
     >
       <Box
@@ -108,9 +128,10 @@ function Home() {
           borderRadius: 8,
           overflow: "hidden",
           boxShadow: 3,
-          width: "80%",
+          width: "100%",
           maxWidth: "1000px",
           backgroundColor: "#ffffff",
+          height: "70%",
         }}
       >
         <Typography
@@ -126,19 +147,33 @@ function Home() {
         <Grid container spacing={2} sx={{ padding: 2 }}>
           <Grid item xs={3}>
             <Box
-              sx={{ backgroundColor: "#f2f2f2", padding: 2, borderRadius: 2 }}
+              sx={{
+                backgroundColor: "#f2f2f2",
+                padding: 2,
+                borderRadius: 2,
+                maxHeight: "80vh",
+              }}
             >
               <Typography variant="h6">List</Typography>
               <List component="nav">
                 <Divider />
-                <ListItemButton>
-                  <ListItemText primary="Personal" />
+                <ListItemButton
+                  onClick={() => setSelectedTab("All")}
+                  selected={selectedTab === "All"}
+                >
+                  <ListItemText primary="All" />
                 </ListItemButton>
-                <ListItemButton>
-                  <ListItemText primary="Work" />
+                <ListItemButton
+                  onClick={() => setSelectedTab("Unstarred")}
+                  selected={selectedTab === "Unstarred"}
+                >
+                  <ListItemText primary="Unstarred" />
                 </ListItemButton>
-                <ListItemButton>
-                  <ListItemText primary="Shopping" />
+                <ListItemButton
+                  onClick={() => setSelectedTab("Starred")}
+                  selected={selectedTab === "Starred"}
+                >
+                  <ListItemText primary="Starred" />
                 </ListItemButton>
               </List>
             </Box>
@@ -152,16 +187,41 @@ function Home() {
                 padding: 2,
                 borderRadius: 2,
                 boxShadow: 1,
+                height: "70%",
+                minHeight: 350,
               }}
             >
               <Typography variant="h6">List of Tasks</Typography>
               <Divider />
-              <List component="nav">
-                {tasks.map((task, index) => (
+              <List
+                component="nav"
+                sx={{
+                  overflowY: "auto",
+
+                  flexGrow: 1,
+                  scrollbarWidth: "thin",
+                  "&::-webkit-scrollbar": {
+                    width: "6px", 
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: "#888",
+                    borderRadius: "3px",  
+                  },
+                }}
+              >
+                {filteredTasks.map((task, index) => (
                   <ListItemButton key={index}>
                     <ListItemIcon>
-                      <IconButton>
-                        <StarIcon />
+                      <IconButton
+                        onClick={() => handleToggleStar(task.task_id)}
+                      >
+                        <StarIcon
+                          color={
+                            starredTasks.includes(task.task_id)
+                              ? "primary"
+                              : "inherit"
+                          }
+                        />
                       </IconButton>
                     </ListItemIcon>
                     <ListItemText primary={task.task} />
@@ -173,7 +233,7 @@ function Home() {
               </List>
               <Button
                 variant="contained"
-                sx={{ alignSelf: "flex-end", marginTop: "auto" }}
+                sx={{ alignSelf: "flex-end", marginTop: 5 }}
                 onClick={handleOpenModal}
               >
                 <Typography>Add Task</Typography>
@@ -203,7 +263,6 @@ function Home() {
             }
             label="Add Date"
           />
-
           {addDate && (
             <TextField
               margin="dense"
@@ -217,7 +276,6 @@ function Home() {
             />
           )}
         </DialogContent>
-
         <DialogActions>
           <Button onClick={handleCloseModal}>Cancel</Button>
           <Button onClick={handleSubmitTask} disabled={!task.trim()}>

@@ -35,7 +35,7 @@ export const updateTaskStarStatus = async (
   const { error } = await supabase
     .from("tasks")
     .update({ is_starred: isStarred })
-    .eq("id", taskId)
+    .eq("task_id", taskId)
     .eq("user_id", userId);
 
   if (error) {
@@ -46,7 +46,7 @@ export const updateTaskStarStatus = async (
   return true;
 };
 
-export const deleteTask = async (userId : string, taskId: string) => {
+export const deleteTask = async (userId: string, taskId: string) => {
   const { error } = await supabase
     .from("tasks")
     .delete()
