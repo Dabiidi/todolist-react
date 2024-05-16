@@ -19,7 +19,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import StarIcon from "@mui/icons-material/Star";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -29,11 +29,12 @@ import {
   updateTaskStarStatus,
 } from "../services/auth/todolist.service";
 import { formatDate } from "../utils/dateUtils";
+import { Logout } from "@mui/icons-material";
 
 function Home() {
   const location = useLocation();
   const { userId, name } = location.state || {};
-
+  const navigate = useNavigate();
   const [openTask, setOpenTask] = useState(false);
   const [task, setTask] = useState("");
   const [date, setDate] = useState<Date | null>(null);
@@ -134,16 +135,34 @@ function Home() {
           height: "70%",
         }}
       >
-        <Typography
-          variant="h3"
+        <Box
           sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
             backgroundColor: "#f2f2f2",
             padding: 2,
-            borderBottom: "1px solid #ccc",
           }}
         >
-          Welcome Back, {name}.
-        </Typography>
+          <Typography
+            variant="h3"
+            sx={{
+              backgroundColor: "#f2f2f2",
+              padding: 2,
+            }}
+          >
+            Welcome Back, {name}.
+          </Typography>
+          <Button variant="text" sx={{ minWidth: 0 }}>
+            <Logout
+              onClick={() => {
+                navigate("/");
+              }}
+              sx={{ fontSize: 32 , color:"#000000"}}
+            />
+          </Button>
+        </Box>
+
         <Grid container spacing={2} sx={{ padding: 2 }}>
           <Grid item xs={3}>
             <Box
@@ -201,11 +220,11 @@ function Home() {
                   flexGrow: 1,
                   scrollbarWidth: "thin",
                   "&::-webkit-scrollbar": {
-                    width: "6px", 
+                    width: "6px",
                   },
                   "&::-webkit-scrollbar-thumb": {
                     backgroundColor: "#888",
-                    borderRadius: "3px",  
+                    borderRadius: "3px",
                   },
                 }}
               >
