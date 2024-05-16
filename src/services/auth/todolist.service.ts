@@ -45,3 +45,18 @@ export const updateTaskStarStatus = async (
 
   return true;
 };
+
+export const deleteTask = async (userId : string, taskId: string) => {
+  const { error } = await supabase
+    .from("tasks")
+    .delete()
+    .eq("task_id", taskId)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Error deleting task:", error);
+    return false;
+  }
+
+  return true;
+};

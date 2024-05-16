@@ -10,6 +10,7 @@ import {
   Divider,
   FormControlLabel,
   Grid,
+  IconButton,
   List,
   ListItemButton,
   ListItemIcon,
@@ -18,21 +19,25 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { addTask, fetchTasks } from "../services/auth/todolist.service";
+import {
+  addTask,
+  deleteTask,
+  fetchTasks,
+} from "../services/auth/todolist.service";
 import { useLocation } from "react-router-dom";
 import StarIcon from "@mui/icons-material/Star";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { formatDate } from "../utils/dateUtils";
 
 function Home() {
   const location = useLocation();
   const { userId, name } = location.state || {};
-  console.log("the user ID:", userId, name);
 
   const [openTask, setOpenTask] = useState(false);
   const [task, setTask] = useState("");
   const [date, setDate] = useState<Date | null>(null);
   const [addDate, setAddDate] = useState(false);
-  const [tasks, setTasks] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<{ task: string; task_id: string }[]>([]);
 
   const handleOpenModal = () => {
     setOpenTask(true);
@@ -41,27 +46,48 @@ function Home() {
   const handleCloseModal = () => {
     setOpenTask(false);
     setAddDate(false);
+    setTask("");
+    setDate(null);
   };
 
   const handleSubmitTask = async () => {
+    if (!task.trim()) {
+      alert("Task field cannot be empty");
+      return;
+    }
     const success = await addTask(userId, task, date!);
     if (success) {
-      console.log("Task added successfully");
+      alert("Task added successfully");
+      fetchTasks(userId)
+        .then((tasks) => setTasks(tasks))
+        .catch((error) => console.error("Error fetching tasks:", error));
     } else {
       console.error("Failed to add task");
     }
-    setTask("");
-    setDate(null);
-    setAddDate(false);
+    handleCloseModal();
+  };
+
+  console.log(tasks)
+  const handleDeleteTask = async (taskId: string) => {
+    console.log(taskId)
+    const success = await deleteTask(userId, taskId);
+    if (success) {
+      console.log("Task deleted successfully");
+      fetchTasks(userId)
+        .then((tasks) => setTasks(tasks))
+        .catch((error) => console.error("Error fetching tasks:", error));
+    } else {
+      console.error("Failed to delete task");
+    }
   };
 
   useEffect(() => {
     if (userId) {
       fetchTasks(userId)
-        .then((tasks) => setTasks(tasks.map((task) => task.task)))
+        .then((tasks) => setTasks(tasks))
         .catch((error) => console.error("Error fetching tasks:", error));
     }
-  }, [userId, task]);
+  }, [userId]);
 
   return (
     <Box
@@ -95,7 +121,7 @@ function Home() {
             borderBottom: "1px solid #ccc",
           }}
         >
-          Header
+          Welcome Back, {name}.
         </Typography>
         <Grid container spacing={2} sx={{ padding: 2 }}>
           <Grid item xs={3}>
@@ -134,12 +160,14 @@ function Home() {
                 {tasks.map((task, index) => (
                   <ListItemButton key={index}>
                     <ListItemIcon>
-                      <StarIcon />
+                      <IconButton>
+                        <StarIcon />
+                      </IconButton>
                     </ListItemIcon>
-                    <ListItemText primary={task} />
-                    <Button>
+                    <ListItemText primary={task.task} />
+                    <IconButton onClick={() => handleDeleteTask(task.task_id)}>
                       <DeleteIcon />
-                    </Button>
+                    </IconButton>
                   </ListItemButton>
                 ))}
               </List>
@@ -154,7 +182,7 @@ function Home() {
           </Grid>
         </Grid>
       </Box>
-      <Dialog open={openTask}>
+      <Dialog open={openTask} onClose={handleCloseModal}>
         <DialogTitle>Add Task</DialogTitle>
         <DialogContent>
           <DialogContentText>Enter the Detail of the Task</DialogContentText>
@@ -175,13 +203,14 @@ function Home() {
             }
             label="Add Date"
           />
+
           {addDate && (
             <TextField
               margin="dense"
               type="date"
               fullWidth
               variant="outlined"
-              value={date}
+              value={date ? formatDate(date) : ""}
               onChange={(e) =>
                 setDate(e.target.value ? new Date(e.target.value) : null)
               }
@@ -191,7 +220,9 @@ function Home() {
 
         <DialogActions>
           <Button onClick={handleCloseModal}>Cancel</Button>
-          <Button onClick={handleSubmitTask}>Add task</Button>
+          <Button onClick={handleSubmitTask} disabled={!task.trim()}>
+            Add task
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
